@@ -6,6 +6,11 @@ import {
   Home,
   Loader2,
   MailCheck,
+  Shield,
+  Server,
+  Globe,
+  User,
+  Bug,
   XCircle
 } from 'lucide-react';
 
@@ -23,13 +28,13 @@ function App() {
           <div className="brand-mark">
             <MailCheck size={20} />
           </div>
-          <span>EmailCheck</span>
+          <span>Arken Verify</span>
         </div>
 
         <nav>
           <button className="nav-item active">
             <Home size={20} />
-            <span>Verify Email</span>
+            <span>Email Verification</span>
           </button>
         </nav>
       </aside>
@@ -37,24 +42,24 @@ function App() {
       <main className="main-panel">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Email Verification Tool</p>
-            <strong>Verify Email Addresses Instantly</strong>
+            <p className="eyebrow">ArkenTechSolutions</p>
+            <strong>Advanced Email Verification Dashboard</strong>
           </div>
         </header>
 
-        <ManualVerifyPage />
+        <Dashboard />
       </main>
     </div>
   );
 }
 
-function ManualVerifyPage() {
+function Dashboard() {
   const [email, setEmail] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function verify() {
+  async function verifyEmail() {
     setLoading(true);
     setError('');
     setResult(null);
@@ -70,29 +75,13 @@ function ManualVerifyPage() {
         })
       });
 
-      const payload = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          payload?.message ||
-          payload?.error ||
-          'Verification failed'
-        );
+        throw new Error(data.error || 'Verification failed');
       }
 
-      console.log(payload);
-
-      setResult({
-        email: email,
-        reachable: payload.is_reachable,
-        syntaxValid: payload.syntax?.is_valid_syntax,
-        mxRecords: payload.mx?.has_mx_records,
-        smtpCheck: payload.smtp?.can_connect_smtp,
-        disposable: payload.is_disposable,
-        roleAccount: payload.is_role_account,
-        catchAll: payload.is_catch_all,
-        domain: email.split('@')[1]
-      });
+      setResult(data);
 
     } catch (err) {
       console.error(err);
@@ -104,27 +93,33 @@ function ManualVerifyPage() {
 
   return (
     <section className="page manual-page">
+
       <div className="page-heading">
         <div>
-          <h2>Verify Email</h2>
-          <p>Check whether an email address is valid and reachable.</p>
+          <h2>Email Verification</h2>
+          <p>
+            Verify deliverability, SMTP connectivity, MX records,
+            disposable detection and more.
+          </p>
         </div>
       </div>
 
       <div className="manual-card">
+
         <label>Email Address</label>
 
         <div className="manual-input-row">
+
           <input
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
           />
 
           <button
             className="primary-button"
-            onClick={verify}
+            onClick={verifyEmail}
             disabled={loading || !email.trim()}
           >
             {loading ? (
@@ -135,6 +130,7 @@ function ManualVerifyPage() {
 
             {loading ? 'Verifying...' : 'Verify'}
           </button>
+
         </div>
 
         {error && (
@@ -143,85 +139,209 @@ function ManualVerifyPage() {
             {error}
           </div>
         )}
+
       </div>
 
       {result && (
-        <div className="result-card">
-          <div className="result-header">
-            <h3>{result.email}</h3>
+        <>
 
-            <StatusBadge reachable={result.reachable} />
-          </div>
+          {/* MAIN STATUS */}
+          <div className="result-card">
 
-          <div className="result-grid">
+            <div className="result-header">
 
-            <Metric
-              label="Domain"
-              value={result.domain}
-            />
+              <div>
+                <h3>{result.input}</h3>
+                <p>{result.syntax?.normalized_email}</p>
+              </div>
 
-            <Metric
-              label="Syntax Valid"
-              value={yesNo(result.syntaxValid)}
-            />
+              <StatusBadge status={result.is_reachable} />
 
-            <Metric
-              label="MX Records"
-              value={yesNo(result.mxRecords)}
-            />
-
-            <Metric
-              label="SMTP Reachable"
-              value={yesNo(result.smtpCheck)}
-            />
-
-            <Metric
-              label="Disposable"
-              value={yesNo(result.disposable)}
-            />
-
-            <Metric
-              label="Role Account"
-              value={yesNo(result.roleAccount)}
-            />
-
-            <Metric
-              label="Catch All"
-              value={yesNo(result.catchAll)}
-            />
+            </div>
 
           </div>
-        </div>
+
+          {/* EMAIL DETAILS */}
+          <div className="dashboard-grid">
+
+            <InfoCard
+              icon={<User size={20} />}
+              title="Email Information"
+            >
+              <Metric label="Username" value={result.syntax?.username} />
+              <Metric label="Domain" value={result.syntax?.domain} />
+              <Metric
+                label="Syntax Valid"
+                value={yesNo(result.syntax?.is_valid_syntax)}
+              />
+              <Metric
+                label="Normalized"
+                value={result.syntax?.normalized_email}
+              />
+            </InfoCard>
+
+            {/* SMTP */}
+            <InfoCard
+              icon={<Server size={20} />}
+              title="SMTP Validation"
+            >
+              <Metric
+                label="SMTP Connect"
+                value={yesNo(result.smtp?.can_connect_smtp)}
+              />
+
+              <Metric
+                label="Deliverable"
+                value={yesNo(result.smtp?.is_deliverable)}
+              />
+
+              <Metric
+                label="Catch All"
+                value={yesNo(result.smtp?.is_catch_all)}
+              />
+
+              <Metric
+                label="Inbox Full"
+                value={yesNo(result.smtp?.has_full_inbox)}
+              />
+
+              <Metric
+                label="Disabled"
+                value={yesNo(result.smtp?.is_disabled)}
+              />
+            </InfoCard>
+
+            {/* MX */}
+            <InfoCard
+              icon={<Globe size={20} />}
+              title="MX Records"
+            >
+              <Metric
+                label="Accepts Mail"
+                value={yesNo(result.mx?.accepts_mail)}
+              />
+
+              <div className="mx-records">
+                <strong>MX Servers</strong>
+
+                {result.mx?.records?.length ? (
+                  result.mx.records.map((record, index) => (
+                    <div key={index} className="mx-record">
+                      {record}
+                    </div>
+                  ))
+                ) : (
+                  <div className="mx-record">No MX records found</div>
+                )}
+              </div>
+            </InfoCard>
+
+            {/* SECURITY */}
+            <InfoCard
+              icon={<Shield size={20} />}
+              title="Security & Risk"
+            >
+              <Metric
+                label="Disposable"
+                value={yesNo(result.misc?.is_disposable)}
+              />
+
+              <Metric
+                label="Role Account"
+                value={yesNo(result.misc?.is_role_account)}
+              />
+
+              <Metric
+                label="Business Email"
+                value={result.misc?.is_b2c ? 'No' : 'Yes'}
+              />
+
+              <Metric
+                label="HaveIBeenPwned"
+                value={
+                  result.misc?.haveibeenpwned
+                    ? 'Compromised'
+                    : 'Safe'
+                }
+              />
+            </InfoCard>
+
+            {/* DEBUG */}
+            <InfoCard
+              icon={<Bug size={20} />}
+              title="Debug Information"
+            >
+              <Metric
+                label="Backend"
+                value={result.debug?.backend_name}
+              />
+
+              <Metric
+                label="Verification Time"
+                value={`${result.debug?.duration?.secs || 0}.${Math.floor((result.debug?.duration?.nanos || 0) / 1000000)}s`}
+              />
+
+              <Metric
+                label="SMTP Host"
+                value={
+                  result.debug?.smtp?.verif_method?.host || '-'
+                }
+              />
+
+              <Metric
+                label="SMTP Port"
+                value={
+                  result.debug?.smtp?.verif_method?.verif_method?.smtp_port || '-'
+                }
+              />
+            </InfoCard>
+
+          </div>
+
+        </>
       )}
     </section>
   );
 }
 
-function StatusBadge({ reachable }) {
+function InfoCard({ icon, title, children }) {
+  return (
+    <div className="info-card">
 
-  const status = String(reachable || '').toLowerCase();
+      <div className="info-card-header">
+        {icon}
+        <h3>{title}</h3>
+      </div>
 
-  if (
-    status === 'safe' ||
-    status === 'valid' ||
-    status === 'reachable'
-  ) {
+      <div className="info-card-content">
+        {children}
+      </div>
+
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+
+  const normalized = String(status || '').toLowerCase();
+
+  if (normalized === 'safe') {
     return (
       <div className="success-line">
         <CheckCircle2 size={18} />
-        Valid
+        Safe
       </div>
     );
   }
 
   if (
-    status === 'risky' ||
-    status === 'unknown'
+    normalized === 'risky' ||
+    normalized === 'unknown'
   ) {
     return (
       <div className="warning-line">
         <AlertCircle size={18} />
-        Risky / Unknown
+        Risky
       </div>
     );
   }
@@ -236,9 +356,9 @@ function StatusBadge({ reachable }) {
 
 function Metric({ label, value }) {
   return (
-    <div className="metric-card">
+    <div className="metric-row">
       <span>{label}</span>
-      <strong>{value}</strong>
+      <strong>{String(value || '-')}</strong>
     </div>
   );
 }
