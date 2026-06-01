@@ -18,7 +18,7 @@ import './styles.css';
 
 const API_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  'https://verify.arkentechsolutions.com/v0/check_email';
+  'https://verify.arkentechsolutions.com/v1/check_email';
 
 function App() {
   return (
