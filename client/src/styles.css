@@ -11,7 +11,7 @@
 body {
   margin: 0;
 }
-h2{
+h2, .manual-card label{
   color: #000;
 }
 .info-card{
