@@ -51,7 +51,7 @@ input {
   display: grid;
   place-items: center;
   color: #fff;
-  background: #07164a;
+  background: #660000;
 }
 
 nav {
@@ -218,7 +218,7 @@ p {
 
 .primary-button,
 .download-button {
-  background: #2862f3;
+  background: #9f0c0c;
   color: #fff;
 }
 
