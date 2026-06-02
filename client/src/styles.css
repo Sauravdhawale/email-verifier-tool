@@ -11,7 +11,12 @@
 body {
   margin: 0;
 }
-
+h2{
+  color: #000;
+}
+.info-card{
+background-color: #111827;
+}
 button,
 input {
   font: inherit;
