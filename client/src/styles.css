@@ -15,7 +15,7 @@ h2{
   color: #000;
 }
 .info-card{
-background-color: #111827;
+background-color: #111827 !important;
 }
 button,
 input {
